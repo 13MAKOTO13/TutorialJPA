@@ -11,46 +11,41 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 @RequestMapping("country")
 public class CountryController {
-	private final CountryService service;
+    private final CountryService service;
 
-	public CountryController(CountryService service) {
-		this.service = service;
-	}
+    public CountryController(CountryService service) {
+        this.service = service;
+    }
 
-	@GetMapping("/list")
-	public String getList(Model model) {
+    @GetMapping("/list")
+    public String getList(Model model) {
+        model.addAttribute("countrylist", service.getCountryList());
+        return "country/list";
+    }
 
-		model.addAttribute("countrylist", service.getCountryList());
-
-		return "country/list";
-	}
-	@GetMapping(value = {"/detail","/detail/{code}/"})
-	public String getCountry(@PathVariable (name = "code", required = false) String code, Model model){
-        Country country = code != null ? service.getCountry(code) : new Country();
+    @GetMapping("/detail/{code}")
+    public String getCountry(@PathVariable(name = "code", required = false) String code, Model model) {
+        Country country = service.getCountry(code);
         model.addAttribute("country", country);
         return "country/detail";
     }
-	 @PostMapping("/detail")
-	    public String postCountry(@RequestParam("code") String code, @RequestParam("name") String name,
-	            @RequestParam("population") int population, Model model) {
-	        service.updateCountry(code, name, population);
-	        return "redirect:/country/list";
-	    }
-	 // ----- 削除画面 -----
-	    @GetMapping("/delete")
-	    public String deleteCountryForm(Model model) {
-	        // country/delete.htmlに画面遷移
-	        return "country/delete";
-	    }
-	    // ----- 削除 -----
-	    @PostMapping("/delete")
-	    public String deleteCountry(@RequestParam("code") String code, Model model) {
-	        // 削除
-	        service.deleteCountry(code);
 
-	        // 一覧画面にリダイレクト
-	        return "redirect:/country/list";
-	    }
+    @PostMapping("/detail")
+    public String postCountry(@RequestParam("code") String code, @RequestParam("name") String name,@RequestParam("population") int population, Model model) {
+        service.updateCountry(code, name, population);
+        return "redirect:/country/list";
+    }
 
-	}
+    @GetMapping("/delete/{code}")
+    public String deleteCountryForm(@PathVariable(name = "code", required = false) String code, Model model) {
+        Country country = service.getCountry(code);
+        model.addAttribute("country", country);
+        return "country/delete";
+    }
 
+    @PostMapping("/country/{code}")
+    public String deleteCountry(@RequestParam("code") String code, Model model) {
+        service.deleteCountry(code);
+        return "redirect:/country/list";
+    }
+}
